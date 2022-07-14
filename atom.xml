@@ -1,0 +1,879 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://xkazimierzx.github.io</id>
+    <title>Kazimierz&apos;s Blog</title>
+    <updated>2022-07-14T03:59:26.784Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://xkazimierzx.github.io"/>
+    <link rel="self" href="https://xkazimierzx.github.io/atom.xml"/>
+    <subtitle>An Ordinary Blog With Recording And Sharing</subtitle>
+    <logo>https://xkazimierzx.github.io/images/avatar.png</logo>
+    <icon>https://xkazimierzx.github.io/favicon.ico</icon>
+    <rights>All rights reserved 2022, Kazimierz&apos;s Blog</rights>
+    <entry>
+        <title type="html"><![CDATA[基于STC89C52RC单片机的简易计算器算法设计]]></title>
+        <id>https://xkazimierzx.github.io/post/ji-yu-stc89c52-dan-pian-ji-de-jian-yi-ji-suan-qi-suan-fa-she-ji/</id>
+        <link href="https://xkazimierzx.github.io/post/ji-yu-stc89c52-dan-pian-ji-de-jian-yi-ji-suan-qi-suan-fa-she-ji/">
+        </link>
+        <updated>2022-07-14T02:53:49.000Z</updated>
+        <summary type="html"><![CDATA[<h1 id="引语">引语</h1>
+<p>笔者在寒假学习51单片机的时候突发奇想，想着尝试制作一个简易的计算器，但由于当时的算法水平还比较低，遇到了一些无法解决的问题。不仅算法写的很杂乱无章，而且存在不小的bug，计算范围很小。于是便放到了一边，经过半年的算法学习，笔者的算法能力得到了很大的提升，便尝试着优化一下曾经的算法(非高精度)。由于Keil编译工具并不支持long long数据类型，最高只支持long，因此运算范围任然有限。虽然如此，还是有一种方法可以打破这种限制，那就是高精度算法，笔者将在以后进行尝试，本文并不讨论高精度。</p>
+]]></summary>
+        <content type="html"><![CDATA[<h1 id="引语">引语</h1>
+<p>笔者在寒假学习51单片机的时候突发奇想，想着尝试制作一个简易的计算器，但由于当时的算法水平还比较低，遇到了一些无法解决的问题。不仅算法写的很杂乱无章，而且存在不小的bug，计算范围很小。于是便放到了一边，经过半年的算法学习，笔者的算法能力得到了很大的提升，便尝试着优化一下曾经的算法(非高精度)。由于Keil编译工具并不支持long long数据类型，最高只支持long，因此运算范围任然有限。虽然如此，还是有一种方法可以打破这种限制，那就是高精度算法，笔者将在以后进行尝试，本文并不讨论高精度。</p>
+<!-- more -->
+<h1 id="摘要">摘要</h1>
+<p>此简易计算器硬件部分主要用到两个模块：1.矩阵键盘 2.LCD1602调试工具，算法部分下文将介绍。</p>
+<h1 id="1硬件部分">1.硬件部分</h1>
+<h2 id="11-stc89c52rc单片机核心">1.1 STC89C52RC单片机核心</h2>
+<figure data-type="image" tabindex="1"><img src="https://xkazimierzx.github.io/post-images/1657768353956.png" alt="" loading="lazy"></figure>
+<h4 id="图1-stc89c52rc原理图">图(1) STC89C52RC原理图</h4>
+<h2 id="12矩阵键盘">1.2矩阵键盘</h2>
+<figure data-type="image" tabindex="2"><img src="https://xkazimierzx.github.io/post-images/1657768130520.png" alt="" loading="lazy"></figure>
+<h4 id="图2-矩阵键盘原理图">图(2) 矩阵键盘原理图</h4>
+<h3 id="121-矩阵键盘结构分析">1.2.1 矩阵键盘结构分析</h3>
+<p>如图所示,矩阵键盘模块左端共有八个I/O接口,用于控制4x4规模共十六个按键，每个I/O接口与矩阵按键交错相连构成矩阵键盘。</p>
+<h3 id="122-矩阵键盘的控制方法">1.2.2 矩阵键盘的控制方法</h3>
+<p>控制矩阵键盘一共有两种方法，分别是<strong>按行扫描</strong>和<strong>按列扫描</strong>,由于上拉电阻的存在我们一般将I/O接口全部制成高电平，通过读取低电平来判断按键是否被按下。由于51单片机<strong>按行扫描</strong>存在一点小bug,所以本文主要介绍<strong>按列扫描</strong>。</p>
+<h4 id="1221-按列扫描">1.2.2.1 按列扫描</h4>
+<p>第一步同上面所介绍的，我们先将左端八个I/O接口全部制高电平,既</p>
+<pre><code>P1 = 0xFF //即二进制的1111 1111
+</code></pre>
+<p>然后扫描第一列，先用低电平即0将第一列选中，即</p>
+<pre><code>P1 = 0xFF //即二进制的1111 1111
+P1_3 = 0; //由原理图可知P1_3接口控制第一列
+</code></pre>
+<p>此时第一列各个按键没有被按下因此前四个接口与后四个接口所构成的回路处于断路状态,一旦有按键被按下，由于上拉电阻，前四个接口中控制该按键的接口将与控制第一列的接口形成回路，并且高电平被拉成低电平。扫描第一列的代码如下:</p>
+<pre><code>unsigned char KeyNum=-1;
+P1=0xFF;
+P1_3=0;
+if(P1_7==0){Delay(20);while(P1_7==0);Delay(20);KeyNum='1';} //判断S1按键是否被按下
+if(P1_6==0){Delay(20);while(P1_6==0);Delay(20);KeyNum='5';}//判断S5按键是否被按下
+if(P1_5==0){Delay(20);while(P1_5==0);Delay(20);KeyNum='9';}//判断S9按键是否被按下
+if(P1_4==0){Delay(20);while(P1_4==0);Delay(20);KeyNum='+';}//判断S13按键是否被按下
+</code></pre>
+<p>其他各列原理和第一列相同，完整代码如下:</p>
+<pre><code>/*Delay为延迟函数用于消除抖动带来的影响*/
+unsigned char MatrixKey()
+{
+	unsigned char KeyNum=-1;
+	P1=0xFF;
+	P1_3=0;
+	if(P1_7==0){Delay(20);while(P1_7==0);Delay(20);KeyNum='1';}
+	if(P1_6==0){Delay(20);while(P1_6==0);Delay(20);KeyNum='5';}
+	if(P1_5==0){Delay(20);while(P1_5==0);Delay(20);KeyNum='9';}
+	if(P1_4==0){Delay(20);while(P1_4==0);Delay(20);KeyNum='+';}
+	
+	P1=0xFF;
+	P1_2=0;
+	if(P1_7==0){Delay(20);while(P1_7==0);Delay(20);KeyNum='2';}
+	if(P1_6==0){Delay(20);while(P1_6==0);Delay(20);KeyNum='6';}
+	if(P1_5==0){Delay(20);while(P1_5==0);Delay(20);KeyNum='0';}
+	if(P1_4==0){Delay(20);while(P1_4==0);Delay(20);KeyNum='-';}
+	
+	P1=0xFF;
+	P1_1=0;
+	if(P1_7==0){Delay(20);while(P1_7==0);Delay(20);KeyNum='3';}
+	if(P1_6==0){Delay(20);while(P1_6==0);Delay(20);KeyNum='7';}
+	if(P1_4==0){Delay(20);while(P1_4==0);Delay(20);KeyNum='*';}
+	
+	P1=0xFF;
+	P1_0=0;
+	if(P1_7==0){Delay(20);while(P1_7==0);Delay(20);KeyNum='4';}
+	if(P1_6==0){Delay(20);while(P1_6==0);Delay(20);KeyNum='8';}
+	if(P1_4==0){Delay(20);while(P1_4==0);Delay(20);KeyNum='/';}
+	
+	if(P3_1==0){Delay(20);while(P3_1==0);Delay(20);KeyNum='=';}
+	return KeyNum;
+}
+
+void Delay(int time)		//@11.0592MHz
+{
+	unsigned char u, y;
+	while(time)
+	{
+		_nop_();
+		u = 2;
+		y = 199;
+		do
+		{
+			while (--y);
+		} while (--u);
+		time--;
+	}
+}
+</code></pre>
+<h2 id="13lcd1602液晶显示器">1.3LCD1602液晶显示器</h2>
+<figure data-type="image" tabindex="3"><img src="https://xkazimierzx.github.io/post-images/1657770468639.png" alt="" loading="lazy"></figure>
+<h4 id="图3lcd1602原理图">图(3)LCD1602原理图</h4>
+<p>对于结果的输出，我使用的LCD1602调试工具，因为这种工具比起数码管要更灵活和好用，具体代码别人已经封装好，直接使用即可。<br>
+<img src="https://xkazimierzx.github.io/post-images/1657770723028.png" alt="" loading="lazy"></p>
+<h4 id="图4lcd1602调试工具使用说明">图(4)LCD1602调试工具使用说明</h4>
+<p>源码</p>
+<pre><code>#include &lt;REGX52.H&gt;
+
+//引脚配置：
+sbit LCD_RS=P2^6;
+sbit LCD_RW=P2^5;
+sbit LCD_EN=P2^7;
+#define LCD_DataPort P0
+
+//函数定义：
+/**
+  * @brief  LCD1602延时函数，12MHz调用可延时1ms
+  * @param  无
+  * @retval 无
+  */
+void LCD_Delay()
+{
+	unsigned char i, j;
+
+	i = 2;
+	j = 239;
+	do
+	{
+		while (--j);
+	} while (--i);
+}
+
+/**
+  * @brief  LCD1602写命令
+  * @param  Command 要写入的命令
+  * @retval 无
+  */
+void LCD_WriteCommand(unsigned char Command)
+{
+	LCD_RS=0;
+	LCD_RW=0;
+	LCD_DataPort=Command;
+	LCD_EN=1;
+	LCD_Delay();
+	LCD_EN=0;
+	LCD_Delay();
+}
+
+/**
+  * @brief  LCD1602写数据
+  * @param  Data 要写入的数据
+  * @retval 无
+  */
+void LCD_WriteData(unsigned char Data)
+{
+	LCD_RS=1;
+	LCD_RW=0;
+	LCD_DataPort=Data;
+	LCD_EN=1;
+	LCD_Delay();
+	LCD_EN=0;
+	LCD_Delay();
+}
+
+/**
+  * @brief  LCD1602设置光标位置
+  * @param  Line 行位置，范围：1~2
+  * @param  Column 列位置，范围：1~16
+  * @retval 无
+  */
+void LCD_SetCursor(unsigned char Line,unsigned char Column)
+{
+	if(Line==1)
+	{
+		LCD_WriteCommand(0x80|(Column-1));
+	}
+	else if(Line==2)
+	{
+		LCD_WriteCommand(0x80|(Column-1+0x40));
+	}
+}
+
+/**
+  * @brief  LCD1602初始化函数
+  * @param  无
+  * @retval 无
+  */
+void LCD_Init()
+{
+	LCD_WriteCommand(0x38);//八位数据接口，两行显示，5*7点阵
+	LCD_WriteCommand(0x0c);//显示开，光标关，闪烁关
+	LCD_WriteCommand(0x06);//数据读写操作后，光标自动加一，画面不动
+	LCD_WriteCommand(0x01);//光标复位，清屏
+}
+
+/**
+  * @brief  在LCD1602指定位置上显示一个字符
+  * @param  Line 行位置，范围：1~2
+  * @param  Column 列位置，范围：1~16
+  * @param  Char 要显示的字符
+  * @retval 无
+  */
+void LCD_ShowChar(unsigned char Line,unsigned char Column,char Char)
+{
+	LCD_SetCursor(Line,Column);
+	LCD_WriteData(Char);
+}
+
+/**
+  * @brief  在LCD1602指定位置开始显示所给字符串
+  * @param  Line 起始行位置，范围：1~2
+  * @param  Column 起始列位置，范围：1~16
+  * @param  String 要显示的字符串
+  * @retval 无
+  */
+void LCD_ShowString(unsigned char Line,unsigned char Column,char *String)
+{
+	unsigned char i;
+	LCD_SetCursor(Line,Column);
+	for(i=0;String[i]!='\0';i++)
+	{
+		LCD_WriteData(String[i]);
+	}
+}
+
+/**
+  * @brief  返回值=X的Y次方
+  */
+int LCD_Pow(int X,int Y)
+{
+	unsigned char i;
+	int Result=1;
+	for(i=0;i&lt;Y;i++)
+	{
+		Result*=X;
+	}
+	return Result;
+}
+
+/**
+  * @brief  在LCD1602指定位置开始显示所给数字
+  * @param  Line 起始行位置，范围：1~2
+  * @param  Column 起始列位置，范围：1~16
+  * @param  Number 要显示的数字，范围：0~65535
+  * @param  Length 要显示数字的长度，范围：1~5
+  * @retval 无
+  */
+void LCD_ShowNum(unsigned char Line,unsigned char Column,unsigned int Number,unsigned char Length)
+{
+	unsigned char i;
+	LCD_SetCursor(Line,Column);
+	for(i=Length;i&gt;0;i--)
+	{
+		LCD_WriteData(Number/LCD_Pow(10,i-1)%10+'0');
+	}
+}
+
+/**
+  * @brief  在LCD1602指定位置开始以有符号十进制显示所给数字
+  * @param  Line 起始行位置，范围：1~2
+  * @param  Column 起始列位置，范围：1~16
+  * @param  Number 要显示的数字，范围：-32768~32767
+  * @param  Length 要显示数字的长度，范围：1~5
+  * @retval 无
+  */
+void LCD_ShowSignedNum(unsigned char Line,unsigned char Column,int Number,unsigned char Length)
+{
+	unsigned char i;
+	unsigned int Number1;
+	LCD_SetCursor(Line,Column);
+	if(Number&gt;=0)
+	{
+		LCD_WriteData('+');
+		Number1=Number;
+	}
+	else
+	{
+		LCD_WriteData('-');
+		Number1=-Number;
+	}
+	for(i=Length;i&gt;0;i--)
+	{
+		LCD_WriteData(Number1/LCD_Pow(10,i-1)%10+'0');
+	}
+}
+
+/**
+  * @brief  在LCD1602指定位置开始以十六进制显示所给数字
+  * @param  Line 起始行位置，范围：1~2
+  * @param  Column 起始列位置，范围：1~16
+  * @param  Number 要显示的数字，范围：0~0xFFFF
+  * @param  Length 要显示数字的长度，范围：1~4
+  * @retval 无
+  */
+void LCD_ShowHexNum(unsigned char Line,unsigned char Column,unsigned int Number,unsigned char Length)
+{
+	unsigned char i,SingleNumber;
+	LCD_SetCursor(Line,Column);
+	for(i=Length;i&gt;0;i--)
+	{
+		SingleNumber=Number/LCD_Pow(16,i-1)%16;
+		if(SingleNumber&lt;10)
+		{
+			LCD_WriteData(SingleNumber+'0');
+		}
+		else
+		{
+			LCD_WriteData(SingleNumber-10+'A');
+		}
+	}
+}
+
+/**
+  * @brief  在LCD1602指定位置开始以二进制显示所给数字
+  * @param  Line 起始行位置，范围：1~2
+  * @param  Column 起始列位置，范围：1~16
+  * @param  Number 要显示的数字，范围：0~1111 1111 1111 1111
+  * @param  Length 要显示数字的长度，范围：1~16
+  * @retval 无
+  */
+void LCD_ShowBinNum(unsigned char Line,unsigned char Column,unsigned int Number,unsigned char Length)
+{
+	unsigned char i;
+	LCD_SetCursor(Line,Column);
+	for(i=Length;i&gt;0;i--)
+	{
+		LCD_WriteData(Number/LCD_Pow(2,i-1)%2+'0');
+	}
+}
+
+</code></pre>
+<p>#2.算法部分</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[经典简单算法汇总]]></title>
+        <id>https://xkazimierzx.github.io/post/jing-dian-jian-dan-suan-fa-hui-zong/</id>
+        <link href="https://xkazimierzx.github.io/post/jing-dian-jian-dan-suan-fa-hui-zong/">
+        </link>
+        <updated>2022-06-19T13:17:41.000Z</updated>
+        <summary type="html"><![CDATA[<h1 id="引语">引语</h1>
+<p>本文章主要汇总一些简单且常用的算法，方便查阅。</p>
+]]></summary>
+        <content type="html"><![CDATA[<h1 id="引语">引语</h1>
+<p>本文章主要汇总一些简单且常用的算法，方便查阅。</p>
+<!-- more -->
+<h1 id="经典算法">经典算法</h1>
+<h2 id="1判断素数">1.判断素数</h2>
+<pre><code>bool prime(int num)
+{
+	for(int i=2;i*i&lt;=num;i++)
+	{
+		if(num%i==0) return false;
+	}
+	return true;
+}
+</code></pre>
+<h2 id="2最大公约数">2.最大公约数</h2>
+<h3 id="21-递归">2.1 递归</h3>
+<pre><code>int gcd_1(int a,int b)
+{
+	if(b == 0) return a;
+	return gcd_1(b,a%b);
+}
+</code></pre>
+<h3 id="22-循环">2.2 循环</h3>
+<pre><code>int gcd_2(int a,int b)
+{
+	while(b)
+	{
+		int t = a%b;
+		a = b;
+		b = t;
+	}
+	return a;
+}
+</code></pre>
+<h2 id="3排序算法">3.排序算法</h2>
+<h3 id="31冒泡排序">3.1冒泡排序</h3>
+<pre><code>int arr[N];
+void bubble_sort(void)
+{
+	for(int i=0;i&lt;N-1;i++)
+	{
+		for(int j=0;j&lt;N-1-i;j++)
+		{
+			if(arr[j+1]&lt;arr[j])
+			{
+				swap(arr[j+1],arr[j]);
+			}
+		}
+	}
+}
+</code></pre>
+<h3 id="32选择排序">3.2选择排序</h3>
+<pre><code>int arr[N];
+void select_sort(void)
+{
+	for(int i=0;i&lt;N-1;i++)
+	{
+		for(int j=i+1;j&lt;N;j++)
+		{
+			if(arr[j]&lt;arr[i])
+			{
+				swap(arr[j],arr[i]);
+			}
+		}
+	}
+}
+</code></pre>
+<h2 id="4判断回文数">4.判断回文数</h2>
+<h3 id="41逐步分解各位数字存储到数组中">4.1逐步分解各位数字，存储到数组中</h3>
+<pre><code>//返回一个数的位数 
+int bitnum(int num)
+{
+	int res=0;
+	while(num)
+	{
+		res++;
+		num/=10;
+	}
+	return res;
+}
+
+int mark[10000000]; //用于存储num的各位数字
+//回文数判断法一 
+bool cirnum_1(int num)
+{
+	int n = bitnum(num);
+	int index=0;
+	while(num)
+	{
+		mark[index]=num%10;
+		index++;
+		num/=10;
+	}
+	
+	for(int i=0;i&lt;n/2;i++)
+	{
+		if(mark[i]!=mark[n-1-i]) return false; //将第i位和第n-1-i位比较（注意i从0开始）
+	}
+	return true;
+}
+</code></pre>
+<h3 id="42先求a数的逆序数b再将a与b比较大小">4.2先求A数的逆序数B，再将A与B比较大小</h3>
+<pre><code>//回文数判断法二 
+bool cirnum_2(int num)
+{
+	int x=num;
+	int num2=0;
+	//求逆序数算法 
+	while(x)
+	{
+		num2 = num2*10;
+		num2 += x%10;
+		x /= 10;
+	}
+	if(num==num2) return true;
+	return false;
+}
+</code></pre>
+<h2 id="5求逆序数">5.求逆序数</h2>
+<pre><code>int reverse(int num)
+{
+    int num2 = 0;
+    while(num)
+    {
+        num2 = num2*10 + num%10;
+        num /= 10;
+    }
+    return num2;
+}
+</code></pre>
+<h2 id="6阶乘">6.阶乘</h2>
+<h3 id="61递归">6.1递归</h3>
+<pre><code>long long int fac(int n)
+{
+    if(n==0) return 1;
+    return n*fac(n-1);
+}
+</code></pre>
+<h3 id="62循环">6.2循环</h3>
+<pre><code>long long int fac(int n)
+{
+    int sum=1;
+    for(int i=1;i&lt;=n;i++)
+    {
+        sum *= i;
+    }
+    return sum;
+}
+</code></pre>
+<h2 id="7斐波拉契数列">7.斐波拉契数列</h2>
+<h3 id="71递归">7.1递归</h3>
+<pre><code>int fib(int n) //n从0开始
+{
+    if(n==0||n==1) return 1;
+    return fib(n-1) + fib(n-2)
+}
+</code></pre>
+<h3 id="72循环dp动态规划">7.2循环(DP动态规划)</h3>
+<pre><code>int dp[100];
+void fib(int n) //n从0开始
+{
+    dp[0] = 1;
+    dp[1] = 1;
+    for(int i=2;i&lt;=n;i++)
+    {
+        dp[i] = dp[i-1] + dp[i-2];
+    }
+}
+</code></pre>
+<h2 id="8闰年判断">8.闰年判断</h2>
+<pre><code>bool leap_year(int year)
+{
+    if(year%400==0||(year%4==0&amp;&amp;year%100!=0)) return true;
+    return false;
+}
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[如何判断回文数]]></title>
+        <id>https://xkazimierzx.github.io/post/pan-duan-hui-wen-shu-de-liang-chong-fang-fa/</id>
+        <link href="https://xkazimierzx.github.io/post/pan-duan-hui-wen-shu-de-liang-chong-fang-fa/">
+        </link>
+        <updated>2022-06-19T12:59:26.000Z</updated>
+        <summary type="html"><![CDATA[<h2 id="引语">引语</h2>
+<p>判断回文数是算法竞赛中比较常见的一种类型，如下介绍两种判断回文数的方法。</p>
+]]></summary>
+        <content type="html"><![CDATA[<h2 id="引语">引语</h2>
+<p>判断回文数是算法竞赛中比较常见的一种类型，如下介绍两种判断回文数的方法。</p>
+<!-- more -->
+<h1 id="万事皆宜先贴代码">万事皆宜，先贴代码</h1>
+<h2 id="方法一逐步分解各位数字存储到某数组中">方法一（逐步分解各位数字，存储到某数组中）</h2>
+<pre><code>//返回一个数的位数 
+int bitnum(int num)
+{
+	int res=0;
+	while(num)
+	{
+		res++;
+		num/=10;
+	}
+	return res;
+}
+
+int mark[10000000]; //用于存储num的各位数字
+//回文数判断法一 
+bool cirnum_1(int num)
+{
+	int n = bitnum(num);
+	int index=0;
+	while(num)
+	{
+		mark[index]=num%10;
+		index++;
+		num/=10;
+	}
+	
+	for(int i=0;i&lt;n/2;i++)
+	{
+		if(mark[i]!=mark[n-1-i]) return false; //将第i位和第n-1-i位比较（注意i从0开始）
+	}
+	return true;
+}
+</code></pre>
+<h2 id="方法二-先求a数的逆序数b再将a与b比较大小">方法二 （先求A数的逆序数B，再将A与B比较大小）</h2>
+<pre><code>//回文数判断法二 
+bool cirnum_2(int num)
+{
+	int x=num;
+	int num2=0;
+	//求逆序数算法 
+	while(x)
+	{
+		num2 = num2*10;
+		num2 += x%10;
+		x /= 10;
+	}
+	if(num==num2) return true;
+	return false;
+}
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[打表法实例分析]]></title>
+        <id>https://xkazimierzx.github.io/post/3/</id>
+        <link href="https://xkazimierzx.github.io/post/3/">
+        </link>
+        <updated>2022-06-04T10:30:33.000Z</updated>
+        <summary type="html"><![CDATA[<h2 id="引语">引语</h2>
+<p>打表法在算法竞赛中十分常用，当题目数据量过大你有找不到好的方法优化时，可以尝试一下打表法。</p>
+]]></summary>
+        <content type="html"><![CDATA[<h2 id="引语">引语</h2>
+<p>打表法在算法竞赛中十分常用，当题目数据量过大你有找不到好的方法优化时，可以尝试一下打表法。</p>
+<!-- more -->
+<h1 id="洛谷p1217">洛谷P1217</h1>
+<h1 id="usaco15回文质数-prime-palindromes">[USACO1.5]回文质数 Prime Palindromes</h1>
+<h2 id="题目描述">题目描述</h2>
+<p>因为 151 既是一个质数又是一个回文数（从左到右和从右到左是看一样的），所以 151 是回文质数。</p>
+<p>写一个程序来找出范围 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>[</mo><mi>a</mi><mo separator="true">,</mo><mi>b</mi><mo>]</mo><mo>(</mo><mn>5</mn><mo>≤</mo><mi>a</mi><mo>&lt;</mo><mi>b</mi><mo>≤</mo><mn>100</mn><mo separator="true">,</mo><mn>000</mn><mo separator="true">,</mo><mn>000</mn><mo>)</mo></mrow><annotation encoding="application/x-tex">[a,b] (5 \le a &lt; b \le 100,000,000)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord mathdefault">a</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">b</span><span class="mclose">]</span><span class="mopen">(</span><span class="mord">5</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.5782em;vertical-align:-0.0391em;"></span><span class="mord mathdefault">a</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">&lt;</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.83041em;vertical-align:-0.13597em;"></span><span class="mord mathdefault">b</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">1</span><span class="mord">0</span><span class="mord">0</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">0</span><span class="mord">0</span><span class="mord">0</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">0</span><span class="mord">0</span><span class="mord">0</span><span class="mclose">)</span></span></span></span>( 一亿)间的所有回文质数。</p>
+<h2 id="输入格式">输入格式</h2>
+<p>第 1 行: 二个整数 a 和 b .</p>
+<h2 id="输出格式">输出格式</h2>
+<p>输出一个回文质数的列表，一行一个。</p>
+<h2 id="样例-1">样例 #1</h2>
+<h3 id="样例输入-1">样例输入 #1</h3>
+<pre><code>5 500
+</code></pre>
+<h3 id="样例输出-1">样例输出 #1</h3>
+<pre><code>5
+7
+11
+101
+131
+151
+181
+191
+313
+353
+373
+383
+</code></pre>
+<h1 id="案例分析">案例分析</h1>
+<h2 id="1数据范围">1.数据范围</h2>
+<p>本题数据范围较大<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>[</mo><mi>a</mi><mo separator="true">,</mo><mi>b</mi><mo>]</mo><mo>(</mo><mn>5</mn><mo>≤</mo><mi>a</mi><mo>&lt;</mo><mi>b</mi><mo>≤</mo><mn>100</mn><mo separator="true">,</mo><mn>000</mn><mo separator="true">,</mo><mn>000</mn><mo>)</mo></mrow><annotation encoding="application/x-tex">[a,b] (5 \le a &lt; b \le 100,000,000)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord mathdefault">a</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">b</span><span class="mclose">]</span><span class="mopen">(</span><span class="mord">5</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.5782em;vertical-align:-0.0391em;"></span><span class="mord mathdefault">a</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">&lt;</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.83041em;vertical-align:-0.13597em;"></span><span class="mord mathdefault">b</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">1</span><span class="mord">0</span><span class="mord">0</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">0</span><span class="mord">0</span><span class="mord">0</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">0</span><span class="mord">0</span><span class="mord">0</span><span class="mclose">)</span></span></span></span>( 一亿)，因此如果通过素数加回文数判断很容易TLE(超时)。</p>
+<h2 id="2解决方案">2.解决方案</h2>
+<p>既然OJ存在限速，但我们的电脑不存在啊，只要运行时长不是太过夸张，我们便可以先在自己的电脑跑一遍，把所有的回文质数先找出来存储在一个数组中，这下查找的时间复杂度直接就弱化为了<code>O(1)</code>。</p>
+<h3 id="打表代码如下">打表代码如下</h3>
+<pre><code>int main()
+{
+	int a,b,n=0;
+	cin&gt;&gt;a&gt;&gt;b;
+	freopen(&quot;P1217.txt&quot;,&quot;w&quot;,stdout);
+	for(int i=a;i&lt;=b;i++)
+	{
+		if(prime(i)&amp;&amp;cir(i))
+		{
+			cout&lt;&lt;i&lt;&lt;&quot;,&quot;;
+			n++;
+			if(n%10==0) cout&lt;&lt;endl;
+		}
+	}
+	return 0;
+}
+</code></pre>
+<p>其中<code>prime()</code>是用来判断一个数是否为素数，我们直接采用最朴素的枚举法，代码如下。</p>
+<pre><code>bool prime(int num)
+{
+	for(int i=2;i*i&lt;=num;i++)
+	{
+		if(num%i==0) return false;
+	}
+	return true;
+}
+</code></pre>
+<p><code>cir()</code>是用来判断一个数是否为回文数，那么我们如何来进行判断呢？下面介绍一种技巧性很高的方法。</p>
+<p>首先什么是回文数呢？回文数是指一个数，正序和逆序都相等比如<strong>12321，15651等</strong>。</p>
+<p>如此以来我们只需要想办法把一个数字给逆序排列过来，然后判断他与之前是否相等便大功告成。</p>
+<p>下面介绍如何把一个数逆序排列，先上代码。</p>
+<pre><code>while(x)
+	{
+		num2 = num2*10 + x%10;
+		x /= 10;
+	}
+</code></pre>
+<p>x为我们逆序之前的数字，我们首先提取出x的个位数字即<strong>x%10</strong>，之后再消掉x的个位既<strong>x/10</strong>，以便下次<strong>x%10</strong>时提取的时x的十位数字，然后将提取出来的数字加到<strong>num2</strong>变量中，每次提取<strong>num2</strong>都要乘以10以确保每个数字加到相应的位置(个位数加到个位，十位数加到十位)，当<strong>x==0</strong>时提取完毕，退出循环，此时<strong>num2</strong>就是<strong>x</strong>的逆序数。<br>
+最后再将<strong>x</strong>与<strong>num2</strong>比较既</p>
+<pre><code>if(num2==num1) return true;
+return false;
+</code></pre>
+<p>相等就说明是回文数返回<code>True</code>，不相等就说明不是回文数返回<code>False</code>。</p>
+<p>综上所述<code>cir()</code>函数代码如下</p>
+<pre><code>bool cir(int num1)
+{
+	int x=num1,num2 = 0;
+	while(x)
+	{
+		num2 = num2*10 + x%10;
+		x /= 10;
+	}
+	if(num2==num1) return true;
+	return false;
+}
+</code></pre>
+<p>打表之后会将所有的回文质数存在<code>P1217.txt</code>当中</p>
+<h3 id="文件名p1217txt">文件名P1217.txt</h3>
+<pre><code>5,7,11,101,131,151,181,191,313,353,
+373,383,727,757,787,797,919,929,10301,10501,
+10601,11311,11411,12421,12721,12821,13331,13831,13931,14341,
+14741,15451,15551,16061,16361,16561,16661,17471,17971,18181,
+18481,19391,19891,19991,30103,30203,30403,30703,30803,31013,
+31513,32323,32423,33533,34543,34843,35053,35153,35353,35753,
+36263,36563,37273,37573,38083,38183,38783,39293,70207,70507,
+70607,71317,71917,72227,72727,73037,73237,73637,74047,74747,
+75557,76367,76667,77377,77477,77977,78487,78787,78887,79397,
+79697,79997,90709,91019,93139,93239,93739,94049,94349,94649,
+94849,94949,95959,96269,96469,96769,97379,97579,97879,98389,
+98689,1003001,1008001,1022201,1028201,1035301,1043401,1055501,1062601,1065601,
+1074701,1082801,1085801,1092901,1093901,1114111,1117111,1120211,1123211,1126211,
+1129211,1134311,1145411,1150511,1153511,1160611,1163611,1175711,1177711,1178711,
+1180811,1183811,1186811,1190911,1193911,1196911,1201021,1208021,1212121,1215121,
+1218121,1221221,1235321,1242421,1243421,1245421,1250521,1253521,1257521,1262621,
+1268621,1273721,1276721,1278721,1280821,1281821,1286821,1287821,1300031,1303031,
+1311131,1317131,1327231,1328231,1333331,1335331,1338331,1343431,1360631,1362631,
+1363631,1371731,1374731,1390931,1407041,1409041,1411141,1412141,1422241,1437341,
+1444441,1447441,1452541,1456541,1461641,1463641,1464641,1469641,1486841,1489841,
+1490941,1496941,1508051,1513151,1520251,1532351,1535351,1542451,1548451,1550551,
+1551551,1556551,1557551,1565651,1572751,1579751,1580851,1583851,1589851,1594951,
+1597951,1598951,1600061,1609061,1611161,1616161,1628261,1630361,1633361,1640461,
+1643461,1646461,1654561,1657561,1658561,1660661,1670761,1684861,1685861,1688861,
+1695961,1703071,1707071,1712171,1714171,1730371,1734371,1737371,1748471,1755571,
+1761671,1764671,1777771,1793971,1802081,1805081,1820281,1823281,1824281,1826281,
+1829281,1831381,1832381,1842481,1851581,1853581,1856581,1865681,1876781,1878781,
+1879781,1880881,1881881,1883881,1884881,1895981,1903091,1908091,1909091,1917191,
+1924291,1930391,1936391,1941491,1951591,1952591,1957591,1958591,1963691,1968691,
+1969691,1970791,1976791,1981891,1982891,1984891,1987891,1988891,1993991,1995991,
+1998991,3001003,3002003,3007003,3016103,3026203,3064603,3065603,3072703,3073703,
+3075703,3083803,3089803,3091903,3095903,3103013,3106013,3127213,3135313,3140413,
+3155513,3158513,3160613,3166613,3181813,3187813,3193913,3196913,3198913,3211123,
+3212123,3218123,3222223,3223223,3228223,3233323,3236323,3241423,3245423,3252523,
+3256523,3258523,3260623,3267623,3272723,3283823,3285823,3286823,3288823,3291923,
+3293923,3304033,3305033,3307033,3310133,3315133,3319133,3321233,3329233,3331333,
+3337333,3343433,3353533,3362633,3364633,3365633,3368633,3380833,3391933,3392933,
+3400043,3411143,3417143,3424243,3425243,3427243,3439343,3441443,3443443,3444443,
+3447443,3449443,3452543,3460643,3466643,3470743,3479743,3485843,3487843,3503053,
+3515153,3517153,3528253,3541453,3553553,3558553,3563653,3569653,3586853,3589853,
+3590953,3591953,3594953,3601063,3607063,3618163,3621263,3627263,3635363,3643463,
+3646463,3670763,3673763,3680863,3689863,3698963,3708073,3709073,3716173,3717173,
+3721273,3722273,3728273,3732373,3743473,3746473,3762673,3763673,3765673,3768673,
+3769673,3773773,3774773,3781873,3784873,3792973,3793973,3799973,3804083,3806083,
+3812183,3814183,3826283,3829283,3836383,3842483,3853583,3858583,3863683,3864683,
+3867683,3869683,3871783,3878783,3893983,3899983,3913193,3916193,3918193,3924293,
+3927293,3931393,3938393,3942493,3946493,3948493,3964693,3970793,3983893,3991993,
+3994993,3997993,3998993,7014107,7035307,7036307,7041407,7046407,7057507,7065607,
+7069607,7073707,7079707,7082807,7084807,7087807,7093907,7096907,7100017,7114117,
+7115117,7118117,7129217,7134317,7136317,7141417,7145417,7155517,7156517,7158517,
+7159517,7177717,7190917,7194917,7215127,7226227,7246427,7249427,7250527,7256527,
+7257527,7261627,7267627,7276727,7278727,7291927,7300037,7302037,7310137,7314137,
+7324237,7327237,7347437,7352537,7354537,7362637,7365637,7381837,7388837,7392937,
+7401047,7403047,7409047,7415147,7434347,7436347,7439347,7452547,7461647,7466647,
+7472747,7475747,7485847,7486847,7489847,7493947,7507057,7508057,7518157,7519157,
+7521257,7527257,7540457,7562657,7564657,7576757,7586857,7592957,7594957,7600067,
+7611167,7619167,7622267,7630367,7632367,7644467,7654567,7662667,7665667,7666667,
+7668667,7669667,7674767,7681867,7690967,7693967,7696967,7715177,7718177,7722277,
+7729277,7733377,7742477,7747477,7750577,7758577,7764677,7772777,7774777,7778777,
+7782877,7783877,7791977,7794977,7807087,7819187,7820287,7821287,7831387,7832387,
+7838387,7843487,7850587,7856587,7865687,7867687,7868687,7873787,7884887,7891987,
+7897987,7913197,7916197,7930397,7933397,7935397,7938397,7941497,7943497,7949497,
+7957597,7958597,7960697,7977797,7984897,7985897,7987897,7996997,9002009,9015109,
+9024209,9037309,9042409,9043409,9045409,9046409,9049409,9067609,9073709,9076709,
+9078709,9091909,9095909,9103019,9109019,9110119,9127219,9128219,9136319,9149419,
+9169619,9173719,9174719,9179719,9185819,9196919,9199919,9200029,9209029,9212129,
+9217129,9222229,9223229,9230329,9231329,9255529,9269629,9271729,9277729,9280829,
+9286829,9289829,9318139,9320239,9324239,9329239,9332339,9338339,9351539,9357539,
+9375739,9384839,9397939,9400049,9414149,9419149,9433349,9439349,9440449,9446449,
+9451549,9470749,9477749,9492949,9493949,9495949,9504059,9514159,9526259,9529259,
+9547459,9556559,9558559,9561659,9577759,9583859,9585859,9586859,9601069,9602069,
+9604069,9610169,9620269,9624269,9626269,9632369,9634369,9645469,9650569,9657569,
+9670769,9686869,9700079,9709079,9711179,9714179,9724279,9727279,9732379,9733379,
+9743479,9749479,9752579,9754579,9758579,9762679,9770779,9776779,9779779,9781879,
+9782879,9787879,9788879,9795979,9801089,9807089,9809089,9817189,9818189,9820289,
+9822289,9836389,9837389,9845489,9852589,9871789,9888889,9889889,9896989,9902099,
+9907099,9908099,9916199,9918199,9919199,9921299,9923299,9926299,9927299,9931399,
+9932399,9935399,9938399,9957599,9965699,9978799,9980899,9981899,9989899,
+</code></pre>
+<p>然后我们就可以愉悦的运用打表法判断啦，代码如下</p>
+<pre><code>#include &lt;iostream&gt;
+using namespace std;
+
+int res[1000]={...} //此处将上面的结果复制进来;
+int main()
+{
+	int a,b;
+	cin&gt;&gt;a&gt;&gt;b;
+	for(int i=0;i&lt;1000;i++)
+	{
+		if(res[i]&gt;=a&amp;&amp;res[i]&lt;=b)
+		{
+			cout&lt;&lt;res[i]&lt;&lt;endl;
+		}
+		if(res[i]&gt;b) break;
+	}
+	return 0;
+}
+</code></pre>
+<p>最后本题顺利AC！！！</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[微分在近似计算中的误差分析]]></title>
+        <id>https://xkazimierzx.github.io/post/2/</id>
+        <link href="https://xkazimierzx.github.io/post/2/">
+        </link>
+        <updated>2021-10-24T14:17:33.000Z</updated>
+        <summary type="html"><![CDATA[<h2 id="引语">引语</h2>
+<p>在实际的问题当中，我们可能会遇到一个难以求解数值的<strong>常数表达式</strong>，这时我们可以将这个<strong>常数表达式</strong>看作是某个函数的<strong>函数值</strong>，利用微分推导出近似公式进行近似运算，最后求解出一个<strong>近似值</strong>。但在这个过程当中往往会因为一个变量x<sub>0</sub>的取值不同，产生大小不一的误差。在《高等数学》中，为了方便记忆和运算往往令x<sub>0</sub>=0。这就引发了一个问题，x<sub>0</sub>取得<strong>越大</strong>误差<strong>越小</strong>呢？还是x<sub>0</sub>取得<strong>越小</strong>误差<strong>越小</strong>呢？</p>
+]]></summary>
+        <content type="html"><![CDATA[<h2 id="引语">引语</h2>
+<p>在实际的问题当中，我们可能会遇到一个难以求解数值的<strong>常数表达式</strong>，这时我们可以将这个<strong>常数表达式</strong>看作是某个函数的<strong>函数值</strong>，利用微分推导出近似公式进行近似运算，最后求解出一个<strong>近似值</strong>。但在这个过程当中往往会因为一个变量x<sub>0</sub>的取值不同，产生大小不一的误差。在《高等数学》中，为了方便记忆和运算往往令x<sub>0</sub>=0。这就引发了一个问题，x<sub>0</sub>取得<strong>越大</strong>误差<strong>越小</strong>呢？还是x<sub>0</sub>取得<strong>越小</strong>误差<strong>越小</strong>呢？</p>
+<!-- more -->
+<h2 id="函数近似表达式的推导">函数近似表达式的推导</h2>
+<p>利用<strong>微分的定义</strong>我们可以得到如下表达式:</p>
+<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">Δ</mi><mi>y</mi><mo>=</mo><mi>f</mi><mo>(</mo><msub><mi>x</mi><mn>0</mn></msub><mo>+</mo><mi mathvariant="normal">Δ</mi><mi>x</mi><mo>)</mo><mo>−</mo><mi>f</mi><mo>(</mo><msub><mi>x</mi><mn>0</mn></msub><mo>)</mo><mo>=</mo><msup><mi>f</mi><mo mathvariant="normal">′</mo></msup><mo>(</mo><msub><mi>x</mi><mn>0</mn></msub><mo>)</mo><mi mathvariant="normal">Δ</mi><mi>x</mi><mo>+</mo><mi>o</mi><mo>(</mo><mi mathvariant="normal">Δ</mi><mi>x</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">\Delta y=f(x_0+\Delta x)-f(x_0)=f&#x27;(x_0)\Delta x+o(\Delta x)
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="mord">Δ</span><span class="mord mathdefault" style="margin-right:0.03588em;">y</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">Δ</span><span class="mord mathdefault">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.051892em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.801892em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mord">Δ</span><span class="mord mathdefault">x</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault">o</span><span class="mopen">(</span><span class="mord">Δ</span><span class="mord mathdefault">x</span><span class="mclose">)</span></span></span></span></span></p>
+<p>这个式子也可以写为:</p>
+<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>f</mi><mo>(</mo><msub><mi>x</mi><mn>0</mn></msub><mo>+</mo><mi mathvariant="normal">Δ</mi><mi>x</mi><mo>)</mo><mo>=</mo><mi>f</mi><mo>(</mo><msub><mi>x</mi><mn>0</mn></msub><mo>)</mo><mo>+</mo><msup><mi>f</mi><mo mathvariant="normal">′</mo></msup><mo>(</mo><msub><mi>x</mi><mn>0</mn></msub><mo>)</mo><mi mathvariant="normal">Δ</mi><mi>x</mi><mo>+</mo><mi>o</mi><mo>(</mo><mi mathvariant="normal">Δ</mi><mi>x</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">f(x_0+\Delta x)=f(x_0)+f&#x27;(x_0)\Delta x+o(\Delta x)
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">Δ</span><span class="mord mathdefault">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1.051892em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.801892em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mord">Δ</span><span class="mord mathdefault">x</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault">o</span><span class="mopen">(</span><span class="mord">Δ</span><span class="mord mathdefault">x</span><span class="mclose">)</span></span></span></span></span></p>
+<p>这时我们令<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>x</mi><mo>=</mo><msub><mi>x</mi><mn>0</mn></msub><mo>+</mo><mi mathvariant="normal">Δ</mi><mi>x</mi></mrow><annotation encoding="application/x-tex">x=x_0+\Delta x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathdefault">x</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.73333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord">Δ</span><span class="mord mathdefault">x</span></span></span></span>可以得到:</p>
+<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mi>f</mi><mo>(</mo><msub><mi>x</mi><mn>0</mn></msub><mo>)</mo><mo>+</mo><msup><mi>f</mi><mo mathvariant="normal">′</mo></msup><mo>(</mo><msub><mi>x</mi><mn>0</mn></msub><mo>)</mo><mo>(</mo><mi>x</mi><mo>−</mo><msub><mi>x</mi><mn>0</mn></msub><mo>)</mo><mo>+</mo><mi>o</mi><mo>(</mo><mi>x</mi><mo>−</mo><msub><mi>x</mi><mn>0</mn></msub><mo>)</mo></mrow><annotation encoding="application/x-tex">f(x)=f(x_0)+f&#x27;(x_0)(x-x_0)+o(x-x_0)
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1.051892em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.801892em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault">o</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span></span></p>
+<p>通过分析我们很容易知道，误差产生的原因主要是在近似运算中忽略了高阶无穷小量<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>o</mi><mo>(</mo><mi>x</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">o(x)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault">o</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mclose">)</span></span></span></span>，因此当取<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>x</mi><mn>0</mn></msub><mo>=</mo><mi>x</mi><mo>(</mo><mi>x</mi><mo>&gt;</mo><msub><mi>x</mi><mn>0</mn></msub><mo>)</mo></mrow><annotation encoding="application/x-tex">x_0=x(x&gt;x_0)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault">x</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">&gt;</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span>时，误差<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>δ</mi><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\delta=0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.03785em;">δ</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">0</span></span></span></span>。</p>
+<h2 id="结论">结论</h2>
+<p>当<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>x</mi><mn>0</mn></msub><mo>=</mo><mi>x</mi><mo>(</mo><mi>x</mi><mo>&gt;</mo><msub><mi>x</mi><mn>0</mn></msub><mo>)</mo></mrow><annotation encoding="application/x-tex">x_0=x(x&gt;x_0)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault">x</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">&gt;</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span>时，误差<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>δ</mi><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\delta=0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.03785em;">δ</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">0</span></span></span></span>，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>x</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">x_0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>的取值越大，越接近<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>x</mi></mrow><annotation encoding="application/x-tex">x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathdefault">x</span></span></span></span>，误差<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>δ</mi></mrow><annotation encoding="application/x-tex">\delta</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.03785em;">δ</span></span></span></span>越小，当<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>x</mi><mn>0</mn></msub><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">x_0=0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">0</span></span></span></span>时，误差<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>δ</mi></mrow><annotation encoding="application/x-tex">\delta</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.03785em;">δ</span></span></span></span>最大。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[如何使用C语言写出第一个程序]]></title>
+        <id>https://xkazimierzx.github.io/post/1/</id>
+        <link href="https://xkazimierzx.github.io/post/1/">
+        </link>
+        <updated>2021-10-24T06:44:13.000Z</updated>
+        <summary type="html"><![CDATA[<blockquote>
+<p><strong>你好，世界</strong></p>
+</blockquote>
+]]></summary>
+        <content type="html"><![CDATA[<blockquote>
+<p><strong>你好，世界</strong></p>
+</blockquote>
+<!-- more -->
+<h2 id="在命令行打印出hello-world">在命令行打印出<em>Hello World</em></h2>
+<h3 id="引语">引语</h3>
+<p>正如我们每个人出生来到这个世界的“第一句话”是我们的哭声一样，一个程序员开始学习一门编程语言的第一句话便是<em>Hello World</em></p>
+<h3 id="准备和开始">准备和开始</h3>
+<p>首先我们需要用<code>printf()</code>函数，它的英文全称为<strong>Print Format</strong>即<strong>格式化打印</strong>，在C语言中是用来输出文本内容的一种基本函数，代码如下：</p>
+<pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    printf(&quot;Hello World&quot;);
+    return 0;
+}
+</code></pre>
+<p>其中<code>#include &lt;stdio.h&gt;</code>的含义是引用<code>stdio.h</code>这个头文件里面的函数，而<code>printf()</code>函数刚好就定义在<code>#include &lt;stdio.h&gt;</code>之中，我们想使用<code>printf()</code>函数就必须先引用<code>stdio.h</code>这个头文件。<br>
+<em>PS：stdio.h也是最基本的头文件，对于初学者来说大多数函数都由它定义，因此必须引用</em></p>
+<h3 id="主函数讲解">主函数讲解</h3>
+<pre><code>int main()
+{
+    ......  ##省略内容
+
+    return 0;
+}
+</code></pre>
+<p>其中<code>int main()</code>为主函数，我们C程序的语句大多都要在写在其中，同时程序在编译执行时也是以主函数为主体，按顺序执行其中的语句，最终实现我们想要的功能。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Hello World]]></title>
+        <id>https://xkazimierzx.github.io/post/hello-gridea/</id>
+        <link href="https://xkazimierzx.github.io/post/hello-gridea/">
+        </link>
+        <updated>2021-10-23T16:04:10.000Z</updated>
+        <summary type="html"><![CDATA[<p>👏  欢迎访问 <strong>My Blog</strong> ！<br>
+✍️  它主要用来记录生活、心情、知识、笔记、创意... ...</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>👏  欢迎访问 <strong>My Blog</strong> ！<br>
+✍️  它主要用来记录生活、心情、知识、笔记、创意... ...</p>
+<!-- more -->
+]]></content>
+    </entry>
+</feed>

@@ -1,0 +1,167 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hello World | Kazimierz&#39;s Blog</title>
+<link rel="shortcut icon" href="https://xkazimierzx.github.io/favicon.ico?v=1665972765296">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://xkazimierzx.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Hello World | Kazimierz&#39;s Blog - Atom Feed" href="https://xkazimierzx.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="👏  欢迎访问 My Blog ！
+✍️  它主要用来记录生活、心情、知识、笔记、创意... ...
+
+" />
+    <meta name="keywords" content="Hello World" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://xkazimierzx.github.io">
+  <img class="avatar" src="https://xkazimierzx.github.io/images/avatar.png?v=1665972765296" alt="">
+  </a>
+  <h1 class="site-title">
+    Kazimierz&#39;s Blog
+  </h1>
+  <p class="site-description">
+    An Ordinary Blog With Recording And Sharing
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Hello World
+            </h2>
+            <div class="post-info">
+              <span>
+                2021-10-24
+              </span>
+              <span>
+                1 min read
+              </span>
+              
+                <a href="https://xkazimierzx.github.io/tag/Lb2D6Tgdm/" class="post-tag">
+                  # Hello World
+                </a>
+              
+            </div>
+            
+              <img class="post-feature-image" src="https://xkazimierzx.github.io/post-images/hello-gridea.png" alt="">
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>👏  欢迎访问 <strong>My Blog</strong> ！<br>
+✍️  它主要用来记录生活、心情、知识、笔记、创意... ...</p>
+<!-- more -->
+
+              </div>
+              <div class="toc-container">
+                
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+
+        
+
+        <div class="site-footer">
+  Owned by <a href="https://qm.qq.com/cgi-bin/qm/qr?k=4nnxQEIbqyJXGXdNLYyy2E4odg3QNWZ-&noverify=0" target="_blank">Kazimierz</a>
+  <a class="rss" href="https://xkazimierzx.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

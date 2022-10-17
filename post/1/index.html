@@ -1,0 +1,219 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>如何使用C语言写出第一个程序 | Kazimierz&#39;s Blog</title>
+<link rel="shortcut icon" href="https://xkazimierzx.github.io/favicon.ico?v=1665972765296">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://xkazimierzx.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="如何使用C语言写出第一个程序 | Kazimierz&#39;s Blog - Atom Feed" href="https://xkazimierzx.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="
+你好，世界
+
+
+在命令行打印出Hello World
+引语
+正如我们每个人出生来到这个世界的“第一句话”是我们的哭声一样，一个程序员开始学习一门编程语言的第一句话便是Hello World
+准备和开始
+首先我们需要用printf()函数，..." />
+    <meta name="keywords" content="C" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://xkazimierzx.github.io">
+  <img class="avatar" src="https://xkazimierzx.github.io/images/avatar.png?v=1665972765296" alt="">
+  </a>
+  <h1 class="site-title">
+    Kazimierz&#39;s Blog
+  </h1>
+  <p class="site-description">
+    An Ordinary Blog With Recording And Sharing
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              如何使用C语言写出第一个程序
+            </h2>
+            <div class="post-info">
+              <span>
+                2021-10-24
+              </span>
+              <span>
+                2 min read
+              </span>
+              
+                <a href="https://xkazimierzx.github.io/tag/OXoWhJFba/" class="post-tag">
+                  # C
+                </a>
+              
+            </div>
+            
+              <img class="post-feature-image" src="https://xkazimierzx.github.io/post-images/1.jpg" alt="">
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <blockquote>
+<p><strong>你好，世界</strong></p>
+</blockquote>
+<!-- more -->
+<h2 id="在命令行打印出hello-world">在命令行打印出<em>Hello World</em></h2>
+<h3 id="引语">引语</h3>
+<p>正如我们每个人出生来到这个世界的“第一句话”是我们的哭声一样，一个程序员开始学习一门编程语言的第一句话便是<em>Hello World</em></p>
+<h3 id="准备和开始">准备和开始</h3>
+<p>首先我们需要用<code>printf()</code>函数，它的英文全称为<strong>Print Format</strong>即<strong>格式化打印</strong>，在C语言中是用来输出文本内容的一种基本函数，代码如下：</p>
+<pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    printf(&quot;Hello World&quot;);
+    return 0;
+}
+</code></pre>
+<p>其中<code>#include &lt;stdio.h&gt;</code>的含义是引用<code>stdio.h</code>这个头文件里面的函数，而<code>printf()</code>函数刚好就定义在<code>#include &lt;stdio.h&gt;</code>之中，我们想使用<code>printf()</code>函数就必须先引用<code>stdio.h</code>这个头文件。<br>
+<em>PS：stdio.h也是最基本的头文件，对于初学者来说大多数函数都由它定义，因此必须引用</em></p>
+<h3 id="主函数讲解">主函数讲解</h3>
+<pre><code>int main()
+{
+    ......  ##省略内容
+
+    return 0;
+}
+</code></pre>
+<p>其中<code>int main()</code>为主函数，我们C程序的语句大多都要在写在其中，同时程序在编译执行时也是以主函数为主体，按顺序执行其中的语句，最终实现我们想要的功能。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E5%9C%A8%E5%91%BD%E4%BB%A4%E8%A1%8C%E6%89%93%E5%8D%B0%E5%87%BAhello-world">在命令行打印出<em>Hello World</em></a>
+<ul>
+<li><a href="#%E5%BC%95%E8%AF%AD">引语</a></li>
+<li><a href="#%E5%87%86%E5%A4%87%E5%92%8C%E5%BC%80%E5%A7%8B">准备和开始</a></li>
+<li><a href="#%E4%B8%BB%E5%87%BD%E6%95%B0%E8%AE%B2%E8%A7%A3">主函数讲解</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://xkazimierzx.github.io/post/hello-gridea/">
+              <h3 class="post-title">
+                Hello World
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Owned by <a href="https://qm.qq.com/cgi-bin/qm/qr?k=4nnxQEIbqyJXGXdNLYyy2E4odg3QNWZ-&noverify=0" target="_blank">Kazimierz</a>
+  <a class="rss" href="https://xkazimierzx.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

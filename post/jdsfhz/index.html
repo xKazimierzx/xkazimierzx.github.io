@@ -1,0 +1,397 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>经典简单算法汇总 | Kazimierz&#39;s Blog</title>
+<link rel="shortcut icon" href="https://xkazimierzx.github.io/favicon.ico?v=1665972765296">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://xkazimierzx.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="经典简单算法汇总 | Kazimierz&#39;s Blog - Atom Feed" href="https://xkazimierzx.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="引语
+本文章主要汇总一些简单且常用的算法，方便查阅。
+
+经典算法
+1.判断素数
+bool prime(int num)
+{
+	for(int i=2;i*i&lt;=num;i++)
+	{
+		if(num%i==0) return fal..." />
+    <meta name="keywords" content="算法,C" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://xkazimierzx.github.io">
+  <img class="avatar" src="https://xkazimierzx.github.io/images/avatar.png?v=1665972765296" alt="">
+  </a>
+  <h1 class="site-title">
+    Kazimierz&#39;s Blog
+  </h1>
+  <p class="site-description">
+    An Ordinary Blog With Recording And Sharing
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              经典简单算法汇总
+            </h2>
+            <div class="post-info">
+              <span>
+                2022-06-19
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+                <a href="https://xkazimierzx.github.io/tag/algorithm/" class="post-tag">
+                  # 算法
+                </a>
+              
+                <a href="https://xkazimierzx.github.io/tag/OXoWhJFba/" class="post-tag">
+                  # C
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <h1 id="引语">引语</h1>
+<p>本文章主要汇总一些简单且常用的算法，方便查阅。</p>
+<!-- more -->
+<h1 id="经典算法">经典算法</h1>
+<h2 id="1判断素数">1.判断素数</h2>
+<pre><code>bool prime(int num)
+{
+	for(int i=2;i*i&lt;=num;i++)
+	{
+		if(num%i==0) return false;
+	}
+	return true;
+}
+</code></pre>
+<h2 id="2最大公约数">2.最大公约数</h2>
+<h3 id="21-递归">2.1 递归</h3>
+<pre><code>int gcd_1(int a,int b)
+{
+	if(b == 0) return a;
+	return gcd_1(b,a%b);
+}
+</code></pre>
+<h3 id="22-循环">2.2 循环</h3>
+<pre><code>int gcd_2(int a,int b)
+{
+	while(b)
+	{
+		int t = a%b;
+		a = b;
+		b = t;
+	}
+	return a;
+}
+</code></pre>
+<h2 id="3排序算法">3.排序算法</h2>
+<h3 id="31冒泡排序">3.1冒泡排序</h3>
+<pre><code>int arr[N];
+void bubble_sort(void)
+{
+	for(int i=0;i&lt;N-1;i++)
+	{
+		for(int j=0;j&lt;N-1-i;j++)
+		{
+			if(arr[j+1]&lt;arr[j])
+			{
+				swap(arr[j+1],arr[j]);
+			}
+		}
+	}
+}
+</code></pre>
+<h3 id="32选择排序">3.2选择排序</h3>
+<pre><code>int arr[N];
+void select_sort(void)
+{
+	for(int i=0;i&lt;N-1;i++)
+	{
+		for(int j=i+1;j&lt;N;j++)
+		{
+			if(arr[j]&lt;arr[i])
+			{
+				swap(arr[j],arr[i]);
+			}
+		}
+	}
+}
+</code></pre>
+<h2 id="4判断回文数">4.判断回文数</h2>
+<h3 id="41逐步分解各位数字存储到数组中">4.1逐步分解各位数字，存储到数组中</h3>
+<pre><code>//返回一个数的位数 
+int bitnum(int num)
+{
+	int res=0;
+	while(num)
+	{
+		res++;
+		num/=10;
+	}
+	return res;
+}
+
+int mark[10000000]; //用于存储num的各位数字
+//回文数判断法一 
+bool cirnum_1(int num)
+{
+	int n = bitnum(num);
+	int index=0;
+	while(num)
+	{
+		mark[index]=num%10;
+		index++;
+		num/=10;
+	}
+	
+	for(int i=0;i&lt;n/2;i++)
+	{
+		if(mark[i]!=mark[n-1-i]) return false; //将第i位和第n-1-i位比较（注意i从0开始）
+	}
+	return true;
+}
+</code></pre>
+<h3 id="42先求a数的逆序数b再将a与b比较大小">4.2先求A数的逆序数B，再将A与B比较大小</h3>
+<pre><code>//回文数判断法二 
+bool cirnum_2(int num)
+{
+	int x=num;
+	int num2=0;
+	//求逆序数算法 
+	while(x)
+	{
+		num2 = num2*10;
+		num2 += x%10;
+		x /= 10;
+	}
+	if(num==num2) return true;
+	return false;
+}
+</code></pre>
+<h2 id="5求逆序数">5.求逆序数</h2>
+<pre><code>int reverse(int num)
+{
+    int num2 = 0;
+    while(num)
+    {
+        num2 = num2*10 + num%10;
+        num /= 10;
+    }
+    return num2;
+}
+</code></pre>
+<h2 id="6阶乘">6.阶乘</h2>
+<h3 id="61递归">6.1递归</h3>
+<pre><code>long long int fac(int n)
+{
+    if(n==0) return 1;
+    return n*fac(n-1);
+}
+</code></pre>
+<h3 id="62循环">6.2循环</h3>
+<pre><code>long long int fac(int n)
+{
+    int sum=1;
+    for(int i=1;i&lt;=n;i++)
+    {
+        sum *= i;
+    }
+    return sum;
+}
+</code></pre>
+<h2 id="7斐波拉契数列">7.斐波拉契数列</h2>
+<h3 id="71递归">7.1递归</h3>
+<pre><code>int fib(int n) //n从0开始
+{
+    if(n==0||n==1) return 1;
+    return fib(n-1) + fib(n-2)
+}
+</code></pre>
+<h3 id="72循环dp动态规划">7.2循环(DP动态规划)</h3>
+<pre><code>int dp[100];
+void fib(int n) //n从0开始
+{
+    dp[0] = 1;
+    dp[1] = 1;
+    for(int i=2;i&lt;=n;i++)
+    {
+        dp[i] = dp[i-1] + dp[i-2];
+    }
+}
+</code></pre>
+<h2 id="8闰年判断">8.闰年判断</h2>
+<pre><code>bool leap_year(int year)
+{
+    if(year%400==0||(year%4==0&amp;&amp;year%100!=0)) return true;
+    return false;
+}
+</code></pre>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E5%BC%95%E8%AF%AD">引语</a></li>
+<li><a href="#%E7%BB%8F%E5%85%B8%E7%AE%97%E6%B3%95">经典算法</a>
+<ul>
+<li><a href="#1%E5%88%A4%E6%96%AD%E7%B4%A0%E6%95%B0">1.判断素数</a></li>
+<li><a href="#2%E6%9C%80%E5%A4%A7%E5%85%AC%E7%BA%A6%E6%95%B0">2.最大公约数</a>
+<ul>
+<li><a href="#21-%E9%80%92%E5%BD%92">2.1 递归</a></li>
+<li><a href="#22-%E5%BE%AA%E7%8E%AF">2.2 循环</a></li>
+</ul>
+</li>
+<li><a href="#3%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95">3.排序算法</a>
+<ul>
+<li><a href="#31%E5%86%92%E6%B3%A1%E6%8E%92%E5%BA%8F">3.1冒泡排序</a></li>
+<li><a href="#32%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F">3.2选择排序</a></li>
+</ul>
+</li>
+<li><a href="#4%E5%88%A4%E6%96%AD%E5%9B%9E%E6%96%87%E6%95%B0">4.判断回文数</a>
+<ul>
+<li><a href="#41%E9%80%90%E6%AD%A5%E5%88%86%E8%A7%A3%E5%90%84%E4%BD%8D%E6%95%B0%E5%AD%97%E5%AD%98%E5%82%A8%E5%88%B0%E6%95%B0%E7%BB%84%E4%B8%AD">4.1逐步分解各位数字，存储到数组中</a></li>
+<li><a href="#42%E5%85%88%E6%B1%82a%E6%95%B0%E7%9A%84%E9%80%86%E5%BA%8F%E6%95%B0b%E5%86%8D%E5%B0%86a%E4%B8%8Eb%E6%AF%94%E8%BE%83%E5%A4%A7%E5%B0%8F">4.2先求A数的逆序数B，再将A与B比较大小</a></li>
+</ul>
+</li>
+<li><a href="#5%E6%B1%82%E9%80%86%E5%BA%8F%E6%95%B0">5.求逆序数</a></li>
+<li><a href="#6%E9%98%B6%E4%B9%98">6.阶乘</a>
+<ul>
+<li><a href="#61%E9%80%92%E5%BD%92">6.1递归</a></li>
+<li><a href="#62%E5%BE%AA%E7%8E%AF">6.2循环</a></li>
+</ul>
+</li>
+<li><a href="#7%E6%96%90%E6%B3%A2%E6%8B%89%E5%A5%91%E6%95%B0%E5%88%97">7.斐波拉契数列</a>
+<ul>
+<li><a href="#71%E9%80%92%E5%BD%92">7.1递归</a></li>
+<li><a href="#72%E5%BE%AA%E7%8E%AFdp%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92">7.2循环(DP动态规划)</a></li>
+</ul>
+</li>
+<li><a href="#8%E9%97%B0%E5%B9%B4%E5%88%A4%E6%96%AD">8.闰年判断</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://xkazimierzx.github.io/post/huiwen/">
+              <h3 class="post-title">
+                如何判断回文数
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Owned by <a href="https://qm.qq.com/cgi-bin/qm/qr?k=4nnxQEIbqyJXGXdNLYyy2E4odg3QNWZ-&noverify=0" target="_blank">Kazimierz</a>
+  <a class="rss" href="https://xkazimierzx.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

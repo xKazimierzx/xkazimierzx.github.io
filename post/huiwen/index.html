@@ -1,0 +1,248 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>如何判断回文数 | Kazimierz&#39;s Blog</title>
+<link rel="shortcut icon" href="https://xkazimierzx.github.io/favicon.ico?v=1665972765296">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://xkazimierzx.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="如何判断回文数 | Kazimierz&#39;s Blog - Atom Feed" href="https://xkazimierzx.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="引语
+判断回文数是算法竞赛中比较常见的一种类型，如下介绍两种判断回文数的方法。
+
+万事皆宜，先贴代码
+方法一（逐步分解各位数字，存储到某数组中）
+//返回一个数的位数 
+int bitnum(int num)
+{
+	int res=0;
+	..." />
+    <meta name="keywords" content="算法,C" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://xkazimierzx.github.io">
+  <img class="avatar" src="https://xkazimierzx.github.io/images/avatar.png?v=1665972765296" alt="">
+  </a>
+  <h1 class="site-title">
+    Kazimierz&#39;s Blog
+  </h1>
+  <p class="site-description">
+    An Ordinary Blog With Recording And Sharing
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              如何判断回文数
+            </h2>
+            <div class="post-info">
+              <span>
+                2022-06-19
+              </span>
+              <span>
+                1 min read
+              </span>
+              
+                <a href="https://xkazimierzx.github.io/tag/algorithm/" class="post-tag">
+                  # 算法
+                </a>
+              
+                <a href="https://xkazimierzx.github.io/tag/OXoWhJFba/" class="post-tag">
+                  # C
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <h2 id="引语">引语</h2>
+<p>判断回文数是算法竞赛中比较常见的一种类型，如下介绍两种判断回文数的方法。</p>
+<!-- more -->
+<h1 id="万事皆宜先贴代码">万事皆宜，先贴代码</h1>
+<h2 id="方法一逐步分解各位数字存储到某数组中">方法一（逐步分解各位数字，存储到某数组中）</h2>
+<pre><code>//返回一个数的位数 
+int bitnum(int num)
+{
+	int res=0;
+	while(num)
+	{
+		res++;
+		num/=10;
+	}
+	return res;
+}
+
+int mark[10000000]; //用于存储num的各位数字
+//回文数判断法一 
+bool cirnum_1(int num)
+{
+	int n = bitnum(num);
+	int index=0;
+	while(num)
+	{
+		mark[index]=num%10;
+		index++;
+		num/=10;
+	}
+	
+	for(int i=0;i&lt;n/2;i++)
+	{
+		if(mark[i]!=mark[n-1-i]) return false; //将第i位和第n-1-i位比较（注意i从0开始）
+	}
+	return true;
+}
+</code></pre>
+<h2 id="方法二-先求a数的逆序数b再将a与b比较大小">方法二 （先求A数的逆序数B，再将A与B比较大小）</h2>
+<pre><code>//回文数判断法二 
+bool cirnum_2(int num)
+{
+	int x=num;
+	int num2=0;
+	//求逆序数算法 
+	while(x)
+	{
+		num2 = num2*10;
+		num2 += x%10;
+		x /= 10;
+	}
+	if(num==num2) return true;
+	return false;
+}
+</code></pre>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E5%BC%95%E8%AF%AD">引语</a></li>
+</ul>
+</li>
+<li><a href="#%E4%B8%87%E4%BA%8B%E7%9A%86%E5%AE%9C%E5%85%88%E8%B4%B4%E4%BB%A3%E7%A0%81">万事皆宜，先贴代码</a>
+<ul>
+<li><a href="#%E6%96%B9%E6%B3%95%E4%B8%80%E9%80%90%E6%AD%A5%E5%88%86%E8%A7%A3%E5%90%84%E4%BD%8D%E6%95%B0%E5%AD%97%E5%AD%98%E5%82%A8%E5%88%B0%E6%9F%90%E6%95%B0%E7%BB%84%E4%B8%AD">方法一（逐步分解各位数字，存储到某数组中）</a></li>
+<li><a href="#%E6%96%B9%E6%B3%95%E4%BA%8C-%E5%85%88%E6%B1%82a%E6%95%B0%E7%9A%84%E9%80%86%E5%BA%8F%E6%95%B0b%E5%86%8D%E5%B0%86a%E4%B8%8Eb%E6%AF%94%E8%BE%83%E5%A4%A7%E5%B0%8F">方法二 （先求A数的逆序数B，再将A与B比较大小）</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://xkazimierzx.github.io/post/3/">
+              <h3 class="post-title">
+                打表法实例分析
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Owned by <a href="https://qm.qq.com/cgi-bin/qm/qr?k=4nnxQEIbqyJXGXdNLYyy2E4odg3QNWZ-&noverify=0" target="_blank">Kazimierz</a>
+  <a class="rss" href="https://xkazimierzx.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

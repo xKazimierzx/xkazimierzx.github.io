@@ -1,0 +1,497 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>常用模板总结(持续更新) | Kazimierz&#39;s Blog</title>
+<link rel="shortcut icon" href="https://xkazimierzx.github.io/favicon.ico?v=1665972765296">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://xkazimierzx.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="常用模板总结(持续更新) | Kazimierz&#39;s Blog - Atom Feed" href="https://xkazimierzx.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="算法篇
+1. 二分查找
+1.1 整数二分模板
+bool check(int x) {/* ... */} // 检查x是否满足某种性质
+
+// 区间[l, r]被划分成[l, mid]和[mid + 1, r]时使用：
+int bsearc..." />
+    <meta name="keywords" content="算法,C" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://xkazimierzx.github.io">
+  <img class="avatar" src="https://xkazimierzx.github.io/images/avatar.png?v=1665972765296" alt="">
+  </a>
+  <h1 class="site-title">
+    Kazimierz&#39;s Blog
+  </h1>
+  <p class="site-description">
+    An Ordinary Blog With Recording And Sharing
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              常用模板总结(持续更新)
+            </h2>
+            <div class="post-info">
+              <span>
+                2022-09-09
+              </span>
+              <span>
+                7 min read
+              </span>
+              
+                <a href="https://xkazimierzx.github.io/tag/algorithm/" class="post-tag">
+                  # 算法
+                </a>
+              
+                <a href="https://xkazimierzx.github.io/tag/OXoWhJFba/" class="post-tag">
+                  # C
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <h1 id="算法篇">算法篇</h1>
+<h1 id="1-二分查找">1. 二分查找</h1>
+<h2 id="11-整数二分模板">1.1 整数二分模板</h2>
+<pre><code>bool check(int x) {/* ... */} // 检查x是否满足某种性质
+
+// 区间[l, r]被划分成[l, mid]和[mid + 1, r]时使用：
+int bsearch_1(int l, int r)
+{
+    while (l &lt; r)
+    {
+        int mid = l + r &gt;&gt; 1;
+        if (check(mid)) r = mid;    // check()判断mid是否满足性质
+        else l = mid + 1;
+    }
+    return l;
+}
+// 区间[l, r]被划分成[l, mid - 1]和[mid, r]时使用：
+int bsearch_2(int l, int r)
+{
+    while (l &lt; r)
+    {
+        int mid = l + r + 1 &gt;&gt; 1;
+        if (check(mid)) l = mid;
+        else r = mid - 1;
+    }
+    return l;
+}
+</code></pre>
+<h2 id="12-浮点数二分模板">1.2 浮点数二分模板</h2>
+<pre><code>bool check(double x) {/* ... */} // 检查x是否满足某种性质
+
+double bsearch_3(double l, double r)
+{
+    const double eps = 1e-6;   // eps 表示精度，取决于题目对精度的要求
+    while (r - l &gt; eps)
+    {
+        double mid = (l + r) / 2;
+        if (check(mid)) r = mid;
+        else l = mid;
+    }
+    return l;
+}
+</code></pre>
+<h1 id="2-前缀和">2. 前缀和</h1>
+<h2 id="21-一维前缀和">2.1 一维前缀和</h2>
+<pre><code>//预处理前缀和
+for(int i=1;i&lt;=n;i++)
+{
+    cin&gt;&gt;s[i];
+    s[i]+=s[i-1];
+}
+//l~r区间和
+cout&lt;&lt;s[r]-s[l-1]&lt;&lt;endl;
+</code></pre>
+<h2 id="22-二维前缀和子矩阵的和">2.2 二维前缀和(子矩阵的和)</h2>
+<pre><code>//预处理前缀和
+for(int i=1;i&lt;=n;i++)
+    for(int j=1;j&lt;=m;j++)
+    {
+        cin&gt;&gt;a[i][j];
+        a[i][j]+=a[i-1][j]+a[i][j-1]-a[i-1][j-1];
+    }
+//左上角坐标(x1,y1)和右下角坐标(x2,y2)所构成子矩阵的和
+cout&lt;&lt;a[x2][y2]-a[x1-1][y2]-a[x2][y1-1]+a[x1-1][y1-1]&lt;&lt;endl;
+</code></pre>
+<h1 id="数据结构篇">数据结构篇</h1>
+<h1 id="1-树状数组">1. 树状数组</h1>
+<figure data-type="image" tabindex="1"><img src="https://xkazimierzx.github.io/post-images/1662714747283.png" alt="" loading="lazy"></figure>
+<pre><code>#define lowbit(x) ((x)&amp;(-x)) //提取出x的二进制形式最后一个1的位置k返回2^k
+void add(int x,int c) //更新树状数组, ax = ax + c,修改所有ax的父节点tree[]
+{
+    for(int i=x;i&lt;=n;i+=lowbit(i)) tree[i]+=c;
+}
+
+int sum(int x) //树状数组前缀和 sum = a1+a2+a3+...+ax
+{
+    int res=0;
+    for(int i=x;i;i-=lowbit(i)) res+=tr[i];
+    return res;
+}
+</code></pre>
+<h1 id="2-数组模拟单链表">2. 数组模拟单链表</h1>
+<pre><code>class Link_list
+{
+    public:
+        int e[N],ne[N],idx,len; //e[N]:节点值域 ne[N]:节点next域 idx:当前已经插入节点个数 len:链表长度
+        void init(void);  //链表初始化
+        void insert(int k,int x); //在第k个插入的节点后面插入x
+        void head_insert(int x); //在头节点后面插入x
+        void Delete(int k); //删除第k个插入的节点后面一个节点
+        Link_list(void){init();}; //构造器用于初始化
+}link;
+
+
+//ne[0]为头结点的next
+void Link_list::init(void)
+{
+    ne[0] = -1;
+    idx = 1;
+}
+
+//在第k个插入的节点后面插入x
+void Link_list::insert(int k,int x)
+{
+    e[idx] = x;
+    ne[idx] = ne[k];
+    ne[k] = idx;
+    idx++;
+    len++;
+}
+
+//在头结点后面插入x
+void Link_list::head_insert(int x)
+{
+    insert(0,x);
+}
+
+void Link_list::Delete(int k)
+{
+    ne[k] = ne[ne[k]];
+    len--;
+}
+</code></pre>
+<h1 id="3-栈">3. 栈</h1>
+<h2 id="31数组模拟栈">3.1数组模拟栈</h2>
+<pre><code>int stack[N],top;
+
+void push(int x)
+{
+    stack[top++] = x;
+}
+
+void pop(void)
+{
+    stack[--top] = 0;
+}
+
+bool empty(void)
+{
+    return !top;
+}
+
+int query(void)
+{
+    return stack[top-1];
+}
+</code></pre>
+<h2 id="32-单调栈">3.2 单调栈</h2>
+<pre><code>//常见模型：找出每个数左边离它最近的比它大/小的数
+int tt = 0;
+for (int i = 1; i &lt;= n; i ++ )
+{
+    while (tt &amp;&amp; check(stk[tt], i)) tt -- ;
+    stk[ ++ tt] = i;
+}
+</code></pre>
+<h1 id="4-单调队列">4. 单调队列</h1>
+<pre><code>//常见模型：找出滑动窗口中的最大值/最小值
+int hh = 0, tt = -1;
+for (int i = 0; i &lt; n; i ++ )
+{
+    while (hh &lt;= tt &amp;&amp; check_out(q[hh])) hh ++ ;  // 判断队头是否滑出窗口
+    while (hh &lt;= tt &amp;&amp; check(q[tt], i)) tt -- ;
+    q[ ++ tt] = i;
+}
+</code></pre>
+<h1 id="5-kmp">5.  KMP</h1>
+<pre><code>// s[]是长文本，p[]是模式串，n是s的长度，m是p的长度
+求模式串的Next数组：
+for (int i = 2, j = 0; i &lt;= m; i ++ )
+{
+    while (j &amp;&amp; p[i] != p[j + 1]) j = ne[j];
+    if (p[i] == p[j + 1]) j ++ ;
+    ne[i] = j;
+}
+
+// 匹配
+for (int i = 1, j = 0; i &lt;= n; i ++ )
+{
+    while (j &amp;&amp; s[i] != p[j + 1]) j = ne[j];
+    if (s[i] == p[j + 1]) j ++ ;
+    if (j == m)
+    {
+        j = ne[j];
+        // 匹配成功后的逻辑
+    }
+}
+</code></pre>
+<h1 id="6-trie树">6. Trie树</h1>
+<pre><code>int son[N][26], cnt[N], idx;
+// 0号点既是根节点，又是空节点
+// son[][]存储树中每个节点的子节点
+// cnt[]存储以每个节点结尾的单词数量
+
+// 插入一个字符串
+void insert(char *str)
+{
+    int p = 0;
+    for (int i = 0; str[i]; i ++ )
+    {
+        int u = str[i] - 'a';
+        if (!son[p][u]) son[p][u] = ++ idx;
+        p = son[p][u];
+    }
+    cnt[p] ++ ;
+}
+
+// 查询字符串出现的次数
+int query(char *str)
+{
+    int p = 0;
+    for (int i = 0; str[i]; i ++ )
+    {
+        int u = str[i] - 'a';
+        if (!son[p][u]) return 0;
+        p = son[p][u];
+    }
+    return cnt[p];
+}
+</code></pre>
+<h1 id="7并查集">7.并查集</h1>
+<pre><code>(1)朴素并查集：
+
+    int p[N]; //存储每个点的祖宗节点
+
+    // 返回x的祖宗节点
+    int find(int x)
+    {
+        if (p[x] != x) p[x] = find(p[x]);
+        return p[x];
+    }
+
+    // 初始化，假定节点编号是1~n
+    for (int i = 1; i &lt;= n; i ++ ) p[i] = i;
+
+    // 合并a和b所在的两个集合：
+    p[find(a)] = find(b);
+
+
+(2)维护size的并查集：
+
+    int p[N], size[N];
+    //p[]存储每个点的祖宗节点, size[]只有祖宗节点的有意义，表示祖宗节点所在集合中的点的数量
+
+    // 返回x的祖宗节点
+    int find(int x)
+    {
+        if (p[x] != x) p[x] = find(p[x]);
+        return p[x];
+    }
+
+    // 初始化，假定节点编号是1~n
+    for (int i = 1; i &lt;= n; i ++ )
+    {
+        p[i] = i;
+        size[i] = 1;
+    }
+
+    // 合并a和b所在的两个集合：
+    size[find(b)] += size[find(a)];
+    p[find(a)] = find(b);
+
+
+(3)维护到祖宗节点距离的并查集：
+
+    int p[N], d[N];
+    //p[]存储每个点的祖宗节点, d[x]存储x到p[x]的距离
+
+    // 返回x的祖宗节点
+    int find(int x)
+    {
+        if (p[x] != x)
+        {
+            int u = find(p[x]);
+            d[x] += d[p[x]];
+            p[x] = u;
+        }
+        return p[x];
+    }
+
+    // 初始化，假定节点编号是1~n
+    for (int i = 1; i &lt;= n; i ++ )
+    {
+        p[i] = i;
+        d[i] = 0;
+    }
+
+    // 合并a和b所在的两个集合：
+    p[find(a)] = find(b);
+    d[find(a)] = distance; // 根据具体问题，初始化find(a)的偏移量
+</code></pre>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E7%AE%97%E6%B3%95%E7%AF%87">算法篇</a></li>
+<li><a href="#1-%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE">1. 二分查找</a>
+<ul>
+<li><a href="#11-%E6%95%B4%E6%95%B0%E4%BA%8C%E5%88%86%E6%A8%A1%E6%9D%BF">1.1 整数二分模板</a></li>
+<li><a href="#12-%E6%B5%AE%E7%82%B9%E6%95%B0%E4%BA%8C%E5%88%86%E6%A8%A1%E6%9D%BF">1.2 浮点数二分模板</a></li>
+</ul>
+</li>
+<li><a href="#2-%E5%89%8D%E7%BC%80%E5%92%8C">2. 前缀和</a>
+<ul>
+<li><a href="#21-%E4%B8%80%E7%BB%B4%E5%89%8D%E7%BC%80%E5%92%8C">2.1 一维前缀和</a></li>
+<li><a href="#22-%E4%BA%8C%E7%BB%B4%E5%89%8D%E7%BC%80%E5%92%8C%E5%AD%90%E7%9F%A9%E9%98%B5%E7%9A%84%E5%92%8C">2.2 二维前缀和(子矩阵的和)</a></li>
+</ul>
+</li>
+<li><a href="#%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E7%AF%87">数据结构篇</a></li>
+<li><a href="#1-%E6%A0%91%E7%8A%B6%E6%95%B0%E7%BB%84">1. 树状数组</a></li>
+<li><a href="#2-%E6%95%B0%E7%BB%84%E6%A8%A1%E6%8B%9F%E5%8D%95%E9%93%BE%E8%A1%A8">2. 数组模拟单链表</a></li>
+<li><a href="#3-%E6%A0%88">3. 栈</a>
+<ul>
+<li><a href="#31%E6%95%B0%E7%BB%84%E6%A8%A1%E6%8B%9F%E6%A0%88">3.1数组模拟栈</a></li>
+<li><a href="#32-%E5%8D%95%E8%B0%83%E6%A0%88">3.2 单调栈</a></li>
+</ul>
+</li>
+<li><a href="#4-%E5%8D%95%E8%B0%83%E9%98%9F%E5%88%97">4. 单调队列</a></li>
+<li><a href="#5-kmp">5.  KMP</a></li>
+<li><a href="#6-trie%E6%A0%91">6. Trie树</a></li>
+<li><a href="#7%E5%B9%B6%E6%9F%A5%E9%9B%86">7.并查集</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://xkazimierzx.github.io/post/dpjjsq/">
+              <h3 class="post-title">
+                基于STC89C52RC单片机的简易计算器算法设计
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Owned by <a href="https://qm.qq.com/cgi-bin/qm/qr?k=4nnxQEIbqyJXGXdNLYyy2E4odg3QNWZ-&noverify=0" target="_blank">Kazimierz</a>
+  <a class="rss" href="https://xkazimierzx.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>
